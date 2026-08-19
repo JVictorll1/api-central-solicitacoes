@@ -21,18 +21,23 @@ app.get("/", (req, res) => {
 
 // GET - Consultar todas as solicitações
 app.get("/solicitacoes", async (req, res) => {
+    console.log("GET /solicitacoes foi chamado");
+
     try {
         const resultado = await pool.query(
             "SELECT * FROM solicitacoes ORDER BY id"
         );
 
+        console.log("Resultado:", resultado.rows);
+
         return res.status(200).json(resultado.rows);
 
     } catch (error) {
-        console.error("Erro ao consultar solicitações:", error);
+        console.error("ERRO BANCO:", error);
 
         return res.status(500).json({
-            message: "Erro ao consultar solicitações."
+            message: "Erro ao consultar solicitações.",
+            error: error.message
         });
     }
 });
