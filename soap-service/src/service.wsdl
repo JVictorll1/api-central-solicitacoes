@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions
+    name="LegacyService"
+    targetNamespace="http://localhost:4000/legacy"
+    xmlns:tns="http://localhost:4000/legacy"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.xmlsoap.org/wsdl/">
+
+    <types>
+        <xsd:schema
+            targetNamespace="http://localhost:4000/legacy">
+
+            <xsd:element name="consultarCliente">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element
+                            name="cpf"
+                            type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element name="consultarClienteResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+
+                        <xsd:element
+                            name="sucesso"
+                            type="xsd:boolean"/>
+
+                        <xsd:element
+                            name="mensagem"
+                            type="xsd:string"/>
+
+                        <xsd:element
+                            name="cpf"
+                            type="xsd:string"
+                            minOccurs="0"/>
+
+                        <xsd:element
+                            name="nome"
+                            type="xsd:string"
+                            minOccurs="0"/>
+
+                        <xsd:element
+                            name="matricula"
+                            type="xsd:string"
+                            minOccurs="0"/>
+
+                        <xsd:element
+                            name="situacao"
+                            type="xsd:string"
+                            minOccurs="0"/>
+
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+        </xsd:schema>
+    </types>
+
+    <message name="consultarClienteRequest">
+        <part
+            name="parameters"
+            element="tns:consultarCliente"/>
+    </message>
+
+    <message name="consultarClienteResponse">
+        <part
+            name="parameters"
+            element="tns:consultarClienteResponse"/>
+    </message>
+
+    <portType name="LegacyPortType">
+
+        <operation name="consultarCliente">
+
+            <input message="tns:consultarClienteRequest"/>
+
+            <output message="tns:consultarClienteResponse"/>
+
+        </operation>
+
+    </portType>
+
+    <binding
+        name="LegacyBinding"
+        type="tns:LegacyPortType">
+
+        <soap:binding
+            style="document"
+            transport="http://schemas.xmlsoap.org/soap/http"/>
+
+        <operation name="consultarCliente">
+
+            <soap:operation
+                soapAction="consultarCliente"/>
+
+            <input>
+                <soap:body use="literal"/>
+            </input>
+
+            <output>
+                <soap:body use="literal"/>
+            </output>
+
+        </operation>
+
+    </binding>
+
+    <service name="LegacyService">
+
+        <port
+            name="LegacyPort"
+            binding="tns:LegacyBinding">
+
+            <soap:address
+                location="http://localhost:4000/legacy"/>
+
+        </port>
+
+    </service>
+
+</definitions>
