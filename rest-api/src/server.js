@@ -4,6 +4,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const pool = require("./database");
+const { consultarCliente } = require("./soap-client");
 
 const app = express();
 
@@ -71,39 +72,44 @@ app.get("/solicitacoes/:id", async (req, res) => {
 
 // POST - Criar uma solicitação
 app.post("/solicitacoes", async (req, res) => {
-    const {
-        titulo,
-        descricao,
-        cpfSolicitante,
-        status
-    } = req.body;
-
-    // Validar campos obrigatórios
-    if (!titulo || !descricao || !cpfSolicitante) {
-        return res.status(400).json({
-            message: "Título, descrição e CPF do solicitante são obrigatórios."
-        });
-    }
-
     try {
+        const { titulo, descricao, cpfSolicitante, status } = req.body;
+
+        if (!titulo || !descricao || !cpfSolicitante) {
+            return res.status(400).json({
+                message: "Título, descrição e CPF do solicitante são obrigatórios."
+            });
+        }
+
+        // Consulta assíncrona ao sistema legado SOAP
+        const cliente = await consultarCliente(cpfSolicitante);
+        // TEMPORÁRIO!!!!
+        console.log("Resposta do SOAP:", JSON.stringify(cliente, null, 2));
+
+        // CPF não existe no sistema legado
+        if (!cliente.sucesso) {
+            return res.status(400).json({
+                message: "CPF não encontrado no sistema legado. Solicitação não cadastrada."
+            });
+        }
+
+        // CPF existe, então cadastra no PostgreSQL
         const resultado = await pool.query(
-            `INSERT INTO solicitacoes (
-                titulo,
-                descricao,
-                cpf_solicitante,
-                status
-            )
-            VALUES ($1, $2, $3, $4)
-            RETURNING *`,
-            [
-                titulo,
-                descricao,
-                cpfSolicitante,
-                status || "ABERTA"
-            ]
+            `INSERT INTO solicitacoes (titulo, descricao, cpf_solicitante, status)
+             VALUES ($1, $2, $3, $4)
+             RETURNING *`,
+            [titulo, descricao, cpfSolicitante, status || "ABERTA"]
         );
 
-        return res.status(201).json(resultado.rows[0]);
+        return res.status(201).json({
+            message: "Solicitação cadastrada com sucesso.",
+            solicitacao: resultado.rows[0],
+            cliente: {
+                nome: cliente.nome,
+                matricula: cliente.matricula,
+                situacao: cliente.situacao
+            }
+        });
 
     } catch (error) {
         console.error("Erro ao criar solicitação:", error);
@@ -255,6 +261,20 @@ app.get("/teste-banco", async (req, res) => {
             message: "Erro ao conectar ao banco de dados." 
         }); 
     } 
+});
+
+// Rota de Teste SOAP
+app.get("/cliente/:cpf", async (req, res) => {
+    try {
+        const cpf = req.params.cpf;
+        const cliente = await consultarCliente(cpf);
+        return res.status(200).json(cliente);
+    } catch (error) {
+        console.error("Erro ao consultar SOAP:", error);
+        return res.status(500).json({
+            message: "Erro ao consultar sistema legado."
+        });
+    }
 });
 
 // Definir porta do Servidor

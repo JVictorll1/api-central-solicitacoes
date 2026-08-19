@@ -16,12 +16,7 @@ const server = http.createServer((req, res) => {
 
 const PORT = process.env.PORT || 4000;
 
-soap.listen(
-    server,
-    "/legacy",
-    service,
-    wsdl
-);
+soap.listen(server, "/legacy", service, wsdl);
 
 server.listen(PORT, () => {
     console.log(`SOAP Service rodando na porta ${PORT}`);

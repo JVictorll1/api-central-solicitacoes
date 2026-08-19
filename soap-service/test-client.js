@@ -1,6 +1,6 @@
 const soap = require("soap");
 
-const url = "http://localhost:4000/legacy?wsdl";
+const url = "https://legacy-soap-service.onrender.com/legacy?wsdl";
 
 soap.createClient(url, (error, client) => {
     if (error) {
