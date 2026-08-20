@@ -87,7 +87,7 @@ app.post("/solicitacoes", async (req, res) => {
         console.log("Resposta do SOAP:", JSON.stringify(cliente, null, 2));
 
         // CPF não existe no sistema legado
-        if (!cliente.sucesso) {
+        if (cliente.sucesso !== true) {
             return res.status(400).json({
                 message: "CPF não encontrado no sistema legado. Solicitação não cadastrada."
             });
